@@ -44,3 +44,6 @@ logs/
 
 # Docker volumes
 postgres_data/
+
+# Ignore test setup files
+notebooks/00_setup_test.ipynb
