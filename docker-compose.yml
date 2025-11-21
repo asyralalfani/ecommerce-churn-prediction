@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: churn-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - churn-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Jupyter for Development
+  jupyter:
+    build:
+      context: .
+      dockerfile: docker/jupyter/Dockerfile
+    container_name: churn-jupyter
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./src:/app/src
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    networks:
+      - churn-network
+    depends_on:
+      - postgres
+
+  # FastAPI Backend
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: churn-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app/api
+      - ./src:/app/src
+      - ./data:/app/data
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - MODEL_PATH=${MODEL_PATH}
+    networks:
+      - churn-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Streamlit Frontend
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/streamlit/Dockerfile
+    container_name: churn-streamlit
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit_app:/app/streamlit_app
+      - ./src:/app/src
+      - ./data:/app/data
+    environment:
+      - API_URL=http://api:8000
+    networks:
+      - churn-network
+    depends_on:
+      - api
+
+networks:
+  churn-network:
+    driver: bridge
+    name: churn-network
+
+volumes:
+  postgres_data:
+    name: churn_postgres_data
