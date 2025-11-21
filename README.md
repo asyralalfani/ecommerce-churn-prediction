@@ -27,6 +27,7 @@ cd ecommerce-churn-prediction
 # 2. Download dataset
 # Place dataset in data/raw/ folder
 https://www.kaggle.com/datasets/ankitverma2010/ecommerce-customer-churn-analysis-and-prediction
+# or copy data from folder data/converted/ -> data/raw/
 
 
 # 3. Build and start services
