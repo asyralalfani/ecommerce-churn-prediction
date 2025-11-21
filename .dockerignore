@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+venv/
+env/
+.Python
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files - don't copy to image
+data/raw/*.csv
+data/raw/*.xlsx
+data/raw/*.zip
+data/processed/*.csv
+data/model/*.h5
+data/model/*.pkl
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Docker
+docker-compose*.yml
+*/Dockerfile
